@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rosi & Saul · 16 de Agosto</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Great+Vibes&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="tailwind.config.js"></script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="min-h-screen bg-cream flex items-center justify-center p-4">
+
+  <div class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md text-center border border-olive/10">
+
+    <p class="font-script text-5xl text-olive leading-tight">Saúl & Rosi</p>
+    <p class="font-display text-olive/70 text-sm tracking-widest uppercase mt-2 mb-6">1 de Agosto</p>
+
+    <p class="text-olive/80 mb-6 text-lg">Comparte tus fotos y videos de nuestro día especial</p>
+
+    <label class="block w-full cursor-pointer border-2 border-dashed border-olive/30 rounded-xl p-6 hover:bg-cream transition">
+      <input type="file" id="fileInput" multiple accept="image/*,video/*" class="hidden" />
+      <div class="text-olive text-4xl mb-2">📷</div>
+      <p class="font-display text-olive text-sm">Haz clic para seleccionar fotos o videos</p>
+      <p class="text-olive/50 text-xs mt-1">Máximo 50MB por archivo</p>
+    </label>
+
+    <div id="fileList" class="mt-4 text-left space-y-3 hidden"></div>
+
+    <button id="uploadBtn"
+      class="mt-6 w-full bg-olive hover:bg-olive/90 text-cream font-display tracking-wide py-3 rounded-xl transition disabled:opacity-50 hidden">
+      Subir archivos
+    </button>
+  </div>
+
+  <!-- Modal de confirmación -->
+  <div id="modalOverlay" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-cream rounded-2xl shadow-xl p-8 w-full max-w-sm text-center border border-olive/10">
+      <div id="modalIcon" class="text-5xl mb-3"></div>
+      <p id="modalTitle" class="font-display text-2xl text-olive mb-2"></p>
+      <p id="modalText" class="text-olive/70 mb-6"></p>
+      <button id="modalCloseBtn" class="bg-olive hover:bg-olive/90 text-cream font-display tracking-wide py-2.5 px-8 rounded-xl transition">
+        Aceptar
+      </button>
+    </div>
+  </div>
+
+  <script src="upload.js"></script>
+</body>
+</html>
