@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Saúl & Rosi · 1 de Agosto</title>
+  <title>Saúl & Rosi 1 de Agosto</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,6 +11,7 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="tailwind.config.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -19,16 +20,16 @@
 
   <div class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md text-center border border-olive/10">
 
-    <p class="font-script text-5xl text-olive leading-tight">Saúl y Rosi</p>
+    <p class="font-script text-5xl text-olive leading-tight">Saúl & Rosi</p>
     <p class="font-display text-olive/70 text-sm tracking-widest uppercase mt-2 mb-6">1 de Agosto</p>
 
     <p class="text-olive/80 mb-6 text-lg">Comparte tus fotos y videos de nuestro día especial</p>
 
     <label class="block w-full cursor-pointer border-2 border-dashed border-olive/30 rounded-xl p-6 hover:bg-cream transition">
       <input type="file" id="fileInput" multiple accept="image/*,video/*" class="hidden" />
-      <div class="text-olive text-4xl mb-2">📷</div>
+      <div class="text-olive mb-2 flex justify-center"><i data-lucide="camera" class="w-9 h-9"></i></div>
       <p class="font-display text-olive text-sm">Haz clic para seleccionar fotos o videos</p>
-      <p class="text-olive/50 text-sm mt-1">Máximo 350MB por archivo · hasta 10 archivos por subida</p>
+      <p class="font-display text-olive/50 text-xs mt-1">Máximo 350MB por archivo · hasta 10 archivos por subida</p>
     </label>
 
     <div id="fileList" class="mt-4 text-left space-y-3 hidden"></div>
@@ -40,9 +41,9 @@
   </div>
 
   <!-- Modal de confirmación -->
-  <div id="modalOverlay" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+  <div id="modalOverlay" class="fixed inset-0 bg-black/40 backdrop-blur-sm items-center justify-center p-4 hidden z-50">
     <div class="bg-cream rounded-2xl shadow-xl p-8 w-full max-w-sm text-center border border-olive/10">
-      <div id="modalIcon" class="text-5xl mb-3"></div>
+      <div id="modalIcon" class="mb-3 flex justify-center"></div>
       <p id="modalTitle" class="font-display text-2xl text-olive mb-2"></p>
       <p id="modalText" class="text-olive/70 mb-6"></p>
       <button id="modalCloseBtn" class="bg-olive hover:bg-olive/90 text-cream font-display tracking-wide py-2.5 px-8 rounded-xl transition">
@@ -52,5 +53,8 @@
   </div>
 
   <script src="upload.js"></script>
+  <script>
+    if (window.lucide) lucide.createIcons();
+  </script>
 </body>
 </html>
