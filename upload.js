@@ -1,5 +1,6 @@
 const WORKER_URL = 'https://boda-uploader.infoiterabyd.workers.dev';
-const MAX_SIZE_MB = 50;
+const MAX_SIZE_MB = 350;
+const MAX_FILES_PER_BATCH = 10;
 
 const fileInput = document.getElementById('fileInput');
 const fileList = document.getElementById('fileList');
@@ -34,7 +35,16 @@ modalCloseBtn.addEventListener('click', () => {
 });
 
 fileInput.addEventListener('change', () => {
-  selectedFiles = [...fileInput.files].filter(f => {
+  let files = [...fileInput.files];
+
+  // Límite de cantidad de archivos por subida
+  if (files.length > MAX_FILES_PER_BATCH) {
+    alert(`Solo puedes subir un máximo de ${MAX_FILES_PER_BATCH} archivos por vez. Se tomarán los primeros ${MAX_FILES_PER_BATCH}.`);
+    files = files.slice(0, MAX_FILES_PER_BATCH);
+  }
+
+  // Límite de tamaño por archivo
+  selectedFiles = files.filter(f => {
     if (f.size > MAX_SIZE_MB * 1024 * 1024) {
       alert(`"${f.name}" supera los ${MAX_SIZE_MB}MB y fue omitido.`);
       return false;
@@ -72,54 +82,72 @@ function uploadWithProgress(file, index) {
   const statusEl = document.getElementById(`file-status-${index}`);
   const barEl = document.getElementById(`file-bar-${index}`);
 
-  return new Promise((resolve) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', WORKER_URL);
-    xhr.setRequestHeader('X-Filename', file.name);
-    xhr.setRequestHeader('Content-Type', file.type);
+  return new Promise(async (resolve) => {
+    statusEl.textContent = 'Preparando...';
 
-    statusEl.textContent = 'Subiendo... 0%';
+    try {
+      // 1. Pedir la URL firmada al Worker
+      const signRes = await fetch(
+        `${WORKER_URL}/sign?filename=${encodeURIComponent(file.name)}&size=${file.size}&contentType=${encodeURIComponent(file.type)}`
+      );
+      const signData = await signRes.json();
 
-    xhr.upload.addEventListener('progress', (e) => {
-      if (e.lengthComputable) {
-        const percent = Math.round((e.loaded / e.total) * 100);
-        barEl.style.width = `${percent}%`;
-        statusEl.textContent = `Subiendo... ${percent}%`;
+      if (signData.error === 'too_large') {
+        statusEl.textContent = '❌ Supera los 350MB';
+        statusEl.className = 'text-xs text-red-600 mt-1';
+        barEl.className = 'h-2 bg-red-500 rounded-full';
+        return resolve({ status: 'error', name: file.name });
       }
-    });
 
-    xhr.onload = () => {
-      try {
-        const data = JSON.parse(xhr.responseText);
-        if (data.duplicate) {
-          statusEl.textContent = '⚠️ Ya fue subido antes';
-          statusEl.className = 'text-xs text-amber-600 mt-1';
-          barEl.className = 'h-2 bg-amber-400 rounded-full';
-          resolve({ status: 'duplicate', name: file.name });
-        } else if (data.ok) {
+      if (signData.duplicate) {
+        statusEl.textContent = '⚠️ Ya fue subido antes';
+        statusEl.className = 'text-xs text-amber-600 mt-1';
+        barEl.className = 'h-2 bg-amber-400 rounded-full';
+        return resolve({ status: 'duplicate', name: file.name });
+      }
+
+      // 2. Subir directo a R2 usando la URL firmada
+      const xhr = new XMLHttpRequest();
+      xhr.open('PUT', signData.url);
+      xhr.setRequestHeader('Content-Type', file.type);
+
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const percent = Math.round((e.loaded / e.total) * 100);
+          barEl.style.width = `${percent}%`;
+          statusEl.textContent = `Subiendo... ${percent}%`;
+        }
+      });
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
           statusEl.textContent = '✅ Subido con éxito';
           statusEl.className = 'text-xs text-green-700 mt-1';
           barEl.className = 'h-2 bg-green-600 rounded-full';
           resolve({ status: 'ok', name: file.name });
         } else {
-          throw new Error('server error');
+          statusEl.textContent = '❌ Error al subir';
+          statusEl.className = 'text-xs text-red-600 mt-1';
+          barEl.className = 'h-2 bg-red-500 rounded-full';
+          resolve({ status: 'error', name: file.name });
         }
-      } catch (err) {
-        statusEl.textContent = '❌ Error al subir';
+      };
+
+      xhr.onerror = () => {
+        statusEl.textContent = '❌ Error de red';
         statusEl.className = 'text-xs text-red-600 mt-1';
         barEl.className = 'h-2 bg-red-500 rounded-full';
         resolve({ status: 'error', name: file.name });
-      }
-    };
+      };
 
-    xhr.onerror = () => {
-      statusEl.textContent = '❌ Error de red';
+      xhr.send(file);
+
+    } catch (err) {
+      statusEl.textContent = '❌ Error de conexión';
       statusEl.className = 'text-xs text-red-600 mt-1';
       barEl.className = 'h-2 bg-red-500 rounded-full';
       resolve({ status: 'error', name: file.name });
-    };
-
-    xhr.send(file);
+    }
   });
 }
 
